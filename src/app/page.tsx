@@ -338,7 +338,7 @@ export default function Home() {
                   <div
                     className="absolute flex flex-col items-center z-50"
                     style={{
-                      top: isMobile ? "8%" : "12%",
+                      top: isMobile ? "8%" : "15%",
                       width: "100%",
                       transform: "translateX(-50%)",
                       padding: "0 10%",
@@ -350,7 +350,7 @@ export default function Home() {
                         <span className="sm:hidden">P</span>
                         {index + 1}
                       </div>
-                      <div className="text-3xl font-mono text-white font-bold drop-shadow-md">
+                      <div className="text-xl sm:text-3xl font-mono text-white font-bold drop-shadow-md">
                         {formatTime(times[index])}
                       </div>
                       <div className="mt-1 h-8 flex items-center justify-center">
