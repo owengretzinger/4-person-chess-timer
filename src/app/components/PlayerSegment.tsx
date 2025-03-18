@@ -53,7 +53,7 @@ export default function PlayerSegment({
         <div
           className="absolute flex flex-col items-center z-50"
           style={{
-            top: isMobile ? "8%" : "15%",
+            top: isMobile ? "7%" : "15%",
             width: "100%",
             transform: "translateX(-50%)",
             padding: "0 10%",

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -11,6 +11,11 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1.0,
+};
 
 export const metadata: Metadata = {
   title: "Multiplayer Clock | Chess Timer for up to 12 players",
@@ -25,8 +30,8 @@ export const metadata: Metadata = {
     "game clock",
     "time management",
   ],
+  metadataBase: new URL("https://multiplayer-clock.vercel.app"),
   authors: [{ name: "Owen Gretzinger" }],
-  viewport: "width=device-width, initial-scale=1.0",
   robots: "index, follow",
   openGraph: {
     title: "Multiplayer Clock | Chess Timer for up to 12 players",
