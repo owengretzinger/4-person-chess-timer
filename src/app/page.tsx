@@ -102,7 +102,7 @@ export default function Home() {
   };
 
   return (
-    <div className="w-screen h-screen bg-gray-100 dark:bg-gray-900 overflow-hidden flex flex-col">
+    <div className="w-full h-full fixed inset-0 bg-gray-100 dark:bg-gray-900 overflow-hidden flex flex-col">
       {/* Player Wheel */}
       <PlayerWheel
         times={times}
