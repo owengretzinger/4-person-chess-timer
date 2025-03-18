@@ -49,10 +49,10 @@ export default function PlayerSegment({
         }}
       >
         {/* Content container - aligned to read from outside */}
-        <div 
+        <div
           className="absolute flex flex-col items-center z-50"
           style={{
-            top: "7%", 
+            top: "7%",
             width: "100%",
             transform: "translateX(-50%)",
             padding: "0 10%",
@@ -61,7 +61,7 @@ export default function PlayerSegment({
           <div className="text-center min-h-[120px] flex flex-col items-center justify-center">
             <div className="text-xl font-bold mb-1 text-white drop-shadow-md">
               <span className="hidden sm:inline">Player </span>
-              <span className="sm:visible">P</span>
+              <span className="sm:hidden">P</span>
               {index + 1}
             </div>
             <div className="text-xl sm:text-3xl font-mono text-white font-bold drop-shadow-md">
