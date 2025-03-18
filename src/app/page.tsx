@@ -1,13 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useTimer } from "./hooks/useTimer";
 import PlayerWheel from "./components/PlayerWheel";
 import SettingsPanel from "./components/SettingsPanel";
 
 export default function Home() {
   const [timerState, timerActions] = useTimer();
-  const [isMobile, setIsMobile] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const {
@@ -27,22 +26,6 @@ export default function Home() {
     setIsRunning,
     setWasRunningBeforeSettings,
   } = timerActions;
-
-  // Effect to handle responsive design
-  useEffect(() => {
-    const checkIsMobile = () => {
-      setIsMobile(window.innerWidth < 640);
-    };
-
-    // Check on initial load
-    checkIsMobile();
-
-    // Add listener for window resize
-    window.addEventListener("resize", checkIsMobile);
-
-    // Clean up
-    return () => window.removeEventListener("resize", checkIsMobile);
-  }, []);
 
   const handleTap = (e: React.MouseEvent) => {
     // Prevent tap handling if clicking on the center button or settings panel
@@ -111,7 +94,7 @@ export default function Home() {
         playerColors={playerColors}
         textColors={textColors}
         numPlayers={numPlayers}
-        isMobile={isMobile}
+        isMobile={false} // Pass a fixed value since we now use CSS for responsiveness
         onTap={handleTap}
         onSettingsToggle={toggleSettings}
       />

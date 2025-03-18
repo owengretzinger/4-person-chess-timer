@@ -23,7 +23,6 @@ export default function PlayerWheel({
   playerColors,
   textColors,
   numPlayers,
-  isMobile,
   onTap,
   onSettingsToggle,
 }: PlayerWheelProps) {
@@ -44,7 +43,7 @@ export default function PlayerWheel({
             isRunning={isRunning}
             bgColor={playerColors[index % playerColors.length]}
             textColor={textColors[index % textColors.length]}
-            isMobile={isMobile}
+            isMobile={false}
           />
         ))}
 
