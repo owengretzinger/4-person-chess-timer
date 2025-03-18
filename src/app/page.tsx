@@ -8,6 +8,23 @@ export default function Home() {
   const [times, setTimes] = useState(Array(numPlayers).fill(initialTime));
   const [currentPlayer, setCurrentPlayer] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Effect to handle responsive design
+  useEffect(() => {
+    const checkIsMobile = () => {
+      setIsMobile(window.innerWidth < 640);
+    };
+
+    // Check on initial load
+    checkIsMobile();
+
+    // Add listener for window resize
+    window.addEventListener("resize", checkIsMobile);
+
+    // Clean up
+    return () => window.removeEventListener("resize", checkIsMobile);
+  }, []);
 
   // Base colors - will cycle or extend as needed for more players
   const baseColors = [
@@ -171,10 +188,10 @@ export default function Home() {
 
       {/* Wheel container */}
       <div
-        className="relative flex-grow flex items-center justify-center"
+        className="relative flex-grow flex items-center justify-center overflow-hidden"
         onClick={handleTap}
       >
-        <div className="relative w-[90vmin] h-[90vmin] rounded-full overflow-hidden border-4 border-gray-800">
+        <div className="absolute w-[150vmax] h-[150vmax] rounded-full overflow-hidden border-4 border-gray-800 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
           {/* Player segments */}
           {Array.from({ length: numPlayers }).map((_, index) => {
             const segment = calculateWheelSegment(index);
@@ -208,16 +225,18 @@ export default function Home() {
                   <div
                     className="absolute flex flex-col items-center z-50"
                     style={{
-                      top: "15%",
+                      top: isMobile ? "8%" : "15%",
                       width: "100%",
                       transform: "translateX(-50%)",
                       padding: "0 10%",
                     }}
                   >
                     <div className="text-center">
-                      <div className="text-xl font-bold mb-1 text-white drop-shadow-md">{`Player ${
-                        index + 1
-                      }`}</div>
+                      <div className="text-xl font-bold mb-1 text-white drop-shadow-md">
+                        <span className="hidden sm:inline">Player </span>
+                        <span className="sm:hidden">P</span>
+                        {index + 1}
+                      </div>
                       <div className="text-3xl font-mono text-white font-bold drop-shadow-md">
                         {formatTime(times[index])}
                       </div>
@@ -238,17 +257,16 @@ export default function Home() {
           })}
 
           {/* Center piece */}
-          <div className="absolute left-1/2 top-1/2 w-[18%] h-[18%] bg-white dark:bg-gray-800 rounded-full transform -translate-x-1/2 -translate-y-1/2 z-10 flex items-center justify-center border-4 border-gray-800 dark:border-gray-700 shadow-lg">
+          <div className="absolute left-1/2 top-1/2 w-[60px] h-[60px] bg-white dark:bg-gray-800 rounded-full transform -translate-x-1/2 -translate-y-1/2 z-10 flex items-center justify-center border-4 border-gray-800 dark:border-gray-700 shadow-lg">
             <div className="text-center">
               <div className="text-lg font-bold">TIMER</div>
-              <div className="text-xs">TAP TO SWITCH</div>
             </div>
           </div>
         </div>
       </div>
 
       {/* Control buttons */}
-      <div className="p-4 flex justify-center gap-4 z-10">
+      <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-4 z-20">
         <button
           onClick={(e) => {
             e.stopPropagation();
