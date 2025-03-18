@@ -127,16 +127,16 @@ export default function Home() {
     // Center point
     const centerX = 50;
     const centerY = 50;
-    const outerRadius = 48; // Slightly smaller to ensure it fits within the container
 
-    // Calculate points on circle circumference
-    const x1 = centerX + outerRadius * Math.cos(startRad);
-    const y1 = centerY + outerRadius * Math.sin(startRad);
-    const x2 = centerX + outerRadius * Math.cos(endRad);
-    const y2 = centerY + outerRadius * Math.sin(endRad);
-
-    // Create SVG clip path for the segment
-    const clipPath = `polygon(${centerX}% ${centerY}%, ${x1}% ${y1}%, ${x2}% ${y2}%)`;
+    // Create a better clip path that extends to the edges for small player counts
+    const containerRadius = 1000; // Much larger than needed to ensure it extends beyond the visible area
+    const ex1 = centerX + containerRadius * Math.cos(startRad);
+    const ey1 = centerY + containerRadius * Math.sin(startRad);
+    const ex2 = centerX + containerRadius * Math.cos(endRad);
+    const ey2 = centerY + containerRadius * Math.sin(endRad);
+    
+    // Combine the points to create the clip path that extends far beyond the visible container
+    const clipPath = `polygon(${centerX}% ${centerY}%, ${ex1}% ${ey1}%, ${ex2}% ${ey2}%)`;
 
     // Calculate position for text - closer to outer edge for better readability
     const textDistanceFromCenter = 36; // % from center point
@@ -219,7 +219,7 @@ export default function Home() {
                   <div
                     className="absolute flex flex-col items-center z-50"
                     style={{
-                      top: isMobile ? "8%" : "15%",
+                      top: isMobile ? "8%" : "12%",
                       width: "100%",
                       transform: "translateX(-50%)",
                       padding: "0 10%",
