@@ -411,7 +411,7 @@ export default function Home() {
       {/* Settings Panel */}
       {isSettingsOpen && (
         <div
-          className="settings-panel absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-2xl w-[90%] max-w-md"
+          className="settings-panel absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-2xl w-[90%] max-w-md max-h-[95vh] overflow-y-auto"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex justify-between items-center mb-4">
