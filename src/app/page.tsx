@@ -26,34 +26,28 @@ export default function Home() {
     return () => window.removeEventListener("resize", checkIsMobile);
   }, []);
 
-  // Base colors - will cycle or extend as needed for more players
-  const baseColors = [
-    "bg-blue-500",
-    "bg-green-500",
-    "bg-red-500",
-    "bg-amber-500",
-    "bg-purple-500",
-    "bg-pink-500",
-    "bg-indigo-500",
-    "bg-cyan-500",
+  // Base colors - expanded to ensure uniqueness for up to 12 players
+  const colorSets = [
+    // Primary set uses 500 shade
+    ["bg-blue-500", "bg-green-500", "bg-red-500", "bg-amber-500", 
+     "bg-purple-500", "bg-pink-500", "bg-indigo-500", "bg-cyan-500", 
+     "bg-orange-500", "bg-lime-500", "bg-emerald-500", "bg-violet-500"],
+     
+    // Text colors (600 shade for better contrast on white)
+    ["text-blue-600", "text-green-600", "text-red-600", "text-amber-600", 
+     "text-purple-600", "text-pink-600", "text-indigo-600", "text-cyan-600", 
+     "text-orange-600", "text-lime-600", "text-emerald-600", "text-violet-600"]
   ];
 
-  // Generate colors for all players, repeating if necessary
+  // Use colors directly from our expanded sets
   const playerColors = Array(numPlayers)
     .fill(0)
-    .map((_, i) => baseColors[i % baseColors.length]);
+    .map((_, i) => colorSets[0][i]);
 
   // Text colors corresponding to background colors
-  const textColors = [
-    "text-blue-600",
-    "text-green-600",
-    "text-red-600",
-    "text-amber-600",
-    "text-purple-600",
-    "text-pink-600",
-    "text-indigo-600",
-    "text-cyan-600",
-  ];
+  const textColors = Array(numPlayers)
+    .fill(0)
+    .map((_, i) => colorSets[1][i]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
