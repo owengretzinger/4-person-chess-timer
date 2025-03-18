@@ -4,49 +4,84 @@ import { useState, useEffect } from "react";
 
 export default function Home() {
   const initialTime = 300; // 5 minutes in seconds
-  const [times, setTimes] = useState([initialTime, initialTime, initialTime, initialTime]);
+  const [numPlayers, setNumPlayers] = useState(4); // Configurable number of players
+  const [times, setTimes] = useState(Array(numPlayers).fill(initialTime));
   const [currentPlayer, setCurrentPlayer] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
-  // Adjust colors to match the image (blue, green, red, gold)
-  const playerColors = ["bg-blue-500", "bg-green-500", "bg-red-500", "bg-amber-500"];
+
+  // Base colors - will cycle or extend as needed for more players
+  const baseColors = [
+    "bg-blue-500",
+    "bg-green-500",
+    "bg-red-500",
+    "bg-amber-500",
+    "bg-purple-500",
+    "bg-pink-500",
+    "bg-indigo-500",
+    "bg-cyan-500",
+  ];
+
+  // Generate colors for all players, repeating if necessary
+  const playerColors = Array(numPlayers)
+    .fill(0)
+    .map((_, i) => baseColors[i % baseColors.length]);
+
+  // Text colors corresponding to background colors
+  const textColors = [
+    "text-blue-600",
+    "text-green-600",
+    "text-red-600",
+    "text-amber-600",
+    "text-purple-600",
+    "text-pink-600",
+    "text-indigo-600",
+    "text-cyan-600",
+  ];
 
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
-    
+
     if (isRunning && times[currentPlayer] > 0) {
       interval = setInterval(() => {
-        setTimes(prevTimes => {
+        setTimes((prevTimes) => {
           const newTimes = [...prevTimes];
           newTimes[currentPlayer] = Math.max(0, newTimes[currentPlayer] - 1);
-          
+
           if (newTimes[currentPlayer] === 0) {
             setIsRunning(false);
           }
-          
+
           return newTimes;
         });
       }, 1000);
     }
-    
+
     return () => {
       if (interval) clearInterval(interval);
     };
   }, [isRunning, currentPlayer, times]);
 
+  // Update times array when number of players changes
+  useEffect(() => {
+    setTimes(Array(numPlayers).fill(initialTime));
+    setCurrentPlayer(0);
+    setIsRunning(false);
+  }, [numPlayers, initialTime]);
+
   const handleTap = () => {
     if (times[currentPlayer] === 0) return;
-    
+
     if (!isRunning) {
       setIsRunning(true);
       return;
     }
-    
+
     // Move to next player
-    setCurrentPlayer((prevPlayer) => (prevPlayer + 1) % 4);
+    setCurrentPlayer((prevPlayer) => (prevPlayer + 1) % numPlayers);
   };
 
   const resetTimers = () => {
-    setTimes([initialTime, initialTime, initialTime, initialTime]);
+    setTimes(Array(numPlayers).fill(initialTime));
     setCurrentPlayer(0);
     setIsRunning(false);
   };
@@ -54,113 +89,167 @@ export default function Home() {
   const formatTime = (timeInSeconds: number): string => {
     const minutes = Math.floor(timeInSeconds / 60);
     const seconds = timeInSeconds % 60;
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+  };
+
+  // Function to adjust player count
+  const adjustPlayerCount = (increment: boolean) => {
+    setNumPlayers((prev) => {
+      const newCount = increment
+        ? Math.min(prev + 1, 12)
+        : Math.max(prev - 1, 2);
+      return newCount;
+    });
+  };
+
+  // Calculate the position and style for each player segment in a wheel layout
+  const calculateWheelSegment = (playerIndex: number) => {
+    const segmentAngle = 360 / numPlayers;
+    const startAngle = segmentAngle * playerIndex;
+    const endAngle = startAngle + segmentAngle;
+    const midAngle = (startAngle + endAngle) / 2;
+
+    // For SVG path creation - convert to radians
+    const startRad = (startAngle - 90) * (Math.PI / 180);
+    const endRad = (endAngle - 90) * (Math.PI / 180);
+
+    // Center point
+    const centerX = 50;
+    const centerY = 50;
+    const outerRadius = 48; // Slightly smaller to ensure it fits within the container
+
+    // Calculate points on circle circumference
+    const x1 = centerX + outerRadius * Math.cos(startRad);
+    const y1 = centerY + outerRadius * Math.sin(startRad);
+    const x2 = centerX + outerRadius * Math.cos(endRad);
+    const y2 = centerY + outerRadius * Math.sin(endRad);
+
+    // Create SVG clip path for the segment
+    const clipPath = `polygon(${centerX}% ${centerY}%, ${x1}% ${y1}%, ${x2}% ${y2}%)`;
+
+    // Calculate position for text - closer to outer edge for better readability
+    const textDistanceFromCenter = 36; // % from center point
+    const textX =
+      centerX +
+      textDistanceFromCenter * Math.cos((midAngle - 90) * (Math.PI / 180));
+    const textY =
+      centerY +
+      textDistanceFromCenter * Math.sin((midAngle - 90) * (Math.PI / 180));
+
+    // Calculate text rotation so it's readable from outside the wheel
+    // This way all text is aligned radially outward
+    const textRotation = midAngle;
+
+    return {
+      clipPath,
+      midAngle,
+      textRotation,
+      textPosition: { x: textX, y: textY },
+    };
   };
 
   return (
-    <div className="w-screen h-screen bg-white overflow-hidden" onClick={handleTap}>
-      {/* Container that fills the entire screen */}
-      <div className="relative w-full h-full overflow-hidden">
-        {/* Player 1 - Bottom (Blue) */}
-        <div 
-          className={`absolute bottom-0 inset-x-0 h-1/2 flex items-end justify-center p-8 
-            ${currentPlayer === 0 ? 'bg-opacity-100' : 'bg-opacity-80'} 
-            ${playerColors[0]} text-white
-            ${currentPlayer === 0 && isRunning ? 'animate-pulse' : ''}
-          `}
-          style={{ clipPath: 'polygon(0% 100%, 100% 100%, 50% 0%)' }}
+    <div className="w-screen h-screen bg-gray-100 dark:bg-gray-900 overflow-hidden flex flex-col">
+      {/* Player count controls */}
+      <div className="absolute top-4 right-4 z-10 flex items-center gap-2 bg-white dark:bg-gray-800 p-2 rounded-md shadow-md">
+        <button
+          onClick={() => adjustPlayerCount(false)}
+          disabled={numPlayers <= 2}
+          className="px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded hover:bg-gray-300 hover:dark:bg-gray-600 disabled:opacity-50"
         >
-          <div className="flex flex-col items-center mb-12">
-            <div>
-              <div className="text-xl md:text-2xl font-bold mb-2">Player 1</div>
-              <div className="text-4xl md:text-5xl font-mono mb-2">{formatTime(times[0])}</div>
-              <div className="relative h-8">
-                {currentPlayer === 0 && isRunning && (
-                  <div className="absolute left-1/2 transform -translate-x-1/2 bg-white text-blue-600 px-4 py-1 rounded-full font-bold shadow-lg whitespace-nowrap">
-                    YOUR TURN
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        {/* Player 2 - Left (Green) */}
-        <div 
-          className={`absolute left-0 inset-y-0 w-1/2 flex items-center justify-start p-4 sm:p-6 
-            ${currentPlayer === 1 ? 'bg-opacity-100' : 'bg-opacity-80'} 
-            ${playerColors[1]} text-white
-            ${currentPlayer === 1 && isRunning ? 'animate-pulse' : ''}
-          `}
-          style={{ clipPath: 'polygon(0% 0%, 0% 100%, 100% 50%)' }}
+          -
+        </button>
+        <span className="text-lg font-medium">{numPlayers} Players</span>
+        <button
+          onClick={() => adjustPlayerCount(true)}
+          disabled={numPlayers >= 12}
+          className="px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded hover:bg-gray-300 hover:dark:bg-gray-600 disabled:opacity-50"
         >
-          <div className="flex flex-col items-center ml-4 sm:ml-6">
-            <div className="rotate-90">
-              <div className="text-xl md:text-2xl font-bold mb-1">Player 2</div>
-              <div className="text-4xl md:text-5xl font-mono mb-1">{formatTime(times[1])}</div>
-              <div className="relative h-8">
-                {currentPlayer === 1 && isRunning && (
-                  <div className="absolute left-1/2 transform -translate-x-1/2 bg-white text-green-600 px-4 py-1 rounded-full font-bold shadow-lg whitespace-nowrap">
-                    YOUR TURN
+          +
+        </button>
+      </div>
+
+      {/* Wheel container */}
+      <div
+        className="relative flex-grow flex items-center justify-center"
+        onClick={handleTap}
+      >
+        <div className="relative w-[90vmin] h-[90vmin] rounded-full overflow-hidden border-4 border-gray-800">
+          {/* Player segments */}
+          {Array.from({ length: numPlayers }).map((_, index) => {
+            const segment = calculateWheelSegment(index);
+
+            return (
+              <div
+                key={index}
+                className={`absolute inset-0
+                  ${playerColors[index % playerColors.length]} 
+                  ${
+                    currentPlayer === index ? "bg-opacity-100" : "bg-opacity-70"
+                  } 
+                  ${currentPlayer === index && isRunning ? "animate-pulse" : ""}
+                `}
+                style={{
+                  clipPath: segment.clipPath,
+                }}
+              >
+                {/* Text container - now positioned radially */}
+                <div
+                  className="absolute w-full"
+                  style={{
+                    top: "50%",
+                    left: "50%",
+                    height: "100%",
+                    transformOrigin: "0 0",
+                    transform: `rotate(${segment.midAngle + 180}deg)`,
+                  }}
+                >
+                  {/* Content container - aligned to read from outside */}
+                  <div
+                    className="absolute flex flex-col items-center z-50"
+                    style={{
+                      top: "15%",
+                      width: "100%",
+                      transform: "translateX(-50%)",
+                      padding: "0 10%",
+                    }}
+                  >
+                    <div className="text-center">
+                      <div className="text-xl font-bold mb-1 text-white drop-shadow-md">{`Player ${
+                        index + 1
+                      }`}</div>
+                      <div className="text-3xl font-mono text-white font-bold drop-shadow-md">
+                        {formatTime(times[index])}
+                      </div>
+                      {currentPlayer === index && isRunning && (
+                        <div className="mt-1 bg-white px-2 py-0.5 rounded-full font-bold text-sm whitespace-nowrap shadow-md">
+                          <span
+                            className={textColors[index % textColors.length]}
+                          >
+                            YOUR TURN
+                          </span>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                )}
+                </div>
               </div>
-            </div>
-          </div>
-        </div>
-        
-        {/* Player 3 - Top (Red) */}
-        <div 
-          className={`absolute top-0 inset-x-0 h-1/2 flex items-start justify-center p-8 
-            ${currentPlayer === 2 ? 'bg-opacity-100' : 'bg-opacity-80'} 
-            ${playerColors[2]} text-white
-            ${currentPlayer === 2 && isRunning ? 'animate-pulse' : ''}
-          `}
-          style={{ clipPath: 'polygon(0% 0%, 100% 0%, 50% 100%)' }}
-        >
-          <div className="flex flex-col items-center mb-12">
-            <div className="rotate-180">
-              <div className="text-xl md:text-2xl font-bold mb-2">Player 3</div>
-              <div className="text-4xl md:text-5xl font-mono mb-2">{formatTime(times[2])}</div>
-              <div className="relative h-8">
-                {currentPlayer === 2 && isRunning && (
-                  <div className="absolute left-1/2 transform -translate-x-1/2 bg-white text-red-600 px-4 py-1 rounded-full font-bold shadow-lg whitespace-nowrap">
-                    YOUR TURN
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        {/* Player 4 - Right (Amber/Gold) */}
-        <div 
-          className={`absolute right-0 inset-y-0 w-1/2 flex items-center justify-end p-4 sm:p-6 
-            ${currentPlayer === 3 ? 'bg-opacity-100' : 'bg-opacity-80'} 
-            ${playerColors[3]} text-white
-            ${currentPlayer === 3 && isRunning ? 'animate-pulse' : ''}
-          `}
-          style={{ clipPath: 'polygon(100% 0%, 100% 100%, 0% 50%)' }}
-        >
-          <div className="flex flex-col items-center mr-4 sm:mr-6">
-            <div className="-rotate-90">
-              <div className="text-xl md:text-2xl font-bold mb-1">Player 4</div>
-              <div className="text-4xl md:text-5xl font-mono mb-1">{formatTime(times[3])}</div>
-              <div className="relative h-8">
-                {currentPlayer === 3 && isRunning && (
-                  <div className="absolute left-1/2 transform -translate-x-1/2 bg-white text-amber-600 px-4 py-1 rounded-full font-bold shadow-lg whitespace-nowrap">
-                    YOUR TURN
-                  </div>
-                )}
-              </div>
+            );
+          })}
+
+          {/* Center piece */}
+          <div className="absolute left-1/2 top-1/2 w-[18%] h-[18%] bg-white dark:bg-gray-800 rounded-full transform -translate-x-1/2 -translate-y-1/2 z-10 flex items-center justify-center border-4 border-gray-800 dark:border-gray-700 shadow-lg">
+            <div className="text-center">
+              <div className="text-lg font-bold">TIMER</div>
+              <div className="text-xs">TAP TO SWITCH</div>
             </div>
           </div>
         </div>
       </div>
-      
-      {/* Control buttons at the bottom of the screen */}
-      <div className="fixed bottom-2 right-8 flex gap-4">
-        <button 
+
+      {/* Control buttons */}
+      <div className="p-4 flex justify-center gap-4 z-10">
+        <button
           onClick={(e) => {
             e.stopPropagation();
             resetTimers();
@@ -170,7 +259,7 @@ export default function Home() {
           Reset
         </button>
         {!isRunning && (
-          <button 
+          <button
             onClick={(e) => {
               e.stopPropagation();
               setIsRunning(true);
@@ -181,7 +270,7 @@ export default function Home() {
           </button>
         )}
         {isRunning && (
-          <button 
+          <button
             onClick={(e) => {
               e.stopPropagation();
               setIsRunning(false);
